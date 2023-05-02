@@ -1,21 +1,82 @@
 package org.sec.utils;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class stringUtils {
-    /** 两个byte数组进行合并为一个byte数组 */
-    public static byte[] byteMerger(byte[] bt1, byte[] bt2){
-        byte[] bt3 = new byte[bt1.length+bt2.length];
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+        generatePassword();
+    }
+
+    /** 依据Mysql文档对通讯过程的密码进行生成 */
+    public static void generatePassword() throws NoSuchAlgorithmException {
+        String hash1 = sha1("root");
+        String slat = "407e342f1021077c005c2d760c431d3b75461d5876";
+        String hash2 = sha1(slat + sha1(hash1));
+
+        int maxLength = Math.max(hash1.length(), hash2.length());
+        char[] charArr1 = String.format("%-" + maxLength + "s", hash1).toCharArray();
+        char[] charArr2 = String.format("%-" + maxLength + "s", hash2).toCharArray();
+
+        char[] result = new char[maxLength];
+        for (int i = 0; i < maxLength; i++) {
+            result[i] = (char) (charArr1[i] ^ charArr2[i]);
+        }
+        String xorResult = new String(result);
+        System.out.println(xorResult);
+    }
+    public static String sha1(String message) throws NoSuchAlgorithmException {
+        // 创建SHA-1加密算法对象
+        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        // 对消息进行加密
+        byte[] hashedMessage = sha1.digest(message.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashedMessage) {
+            hexString.append(String.format("%02x", b));
+        }
+
+        return hexString.toString();
+    }
+
+    /**
+     * Hex Stream直接转为byte数组,类似于python的 b"\x12"
+     *
+     * @return
+     */
+    public static byte[] hexToByteArray(String hexString) {
+        return DatatypeConverter.parseHexBinary(hexString); // 转换为字节数组
+    }
+
+    public static void x1(String str) {
+        String[] test = stringUtils.splitStr(str, 2);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String j : test) {
+            // stringBuilder.append("0x" + j + ",");
+            stringBuilder.append("\\x" + j);
+        }
+        System.out.println(stringBuilder);
+    }
+
+    /**
+     * 两个byte数组进行合并为一个byte数组
+     */
+    public static byte[] byteMerger(byte[] bt1, byte[] bt2) {
+        byte[] bt3 = new byte[bt1.length + bt2.length];
         System.arraycopy(bt1, 0, bt3, 0, bt1.length);
         System.arraycopy(bt2, 0, bt3, bt1.length, bt2.length);
         return bt3;
     }
+
     /**
      * 将\x开头的16进制转换为不带\x
      */
@@ -38,44 +99,30 @@ public class stringUtils {
     /**
      * 返回被 几几分割 的数组
      */
-    public static int[] splitStr(String key, int splitNum) {
-        StringBuilder str = new StringBuilder();
-        str.append(key);
-
-        int i = 0, m = 0;
-        for (; i + m < str.length(); i++) {
-            if (i % splitNum == 0 && i != 0) {
-                str.insert(i + m, ",");
-                m++;
-            }
+    public static String[] splitStr(String str, int splitNum) {
+        int splitLength = 0;
+        if (str.length() % 2 != 0) {
+            splitLength = (str.length() / 2) + 1;
+        } else {
+            splitLength = (str.length() / 2);
         }
-        i = 0;
-        String se = str.toString();
-        String[] a = se.split(",");
-        int[] intArray = new int[key.length() / 2];
-        for (; i < key.length() / 2; i++) {
-            String j = a[i];
-            if (j == null) {
-                break;
-            }
-
-            intArray[i] = Integer.parseInt(j);
-            ;
+        String[] strings = new String[splitLength];
+        for (int i = 0; i < splitLength; i++) {
+            strings[i] = str.substring(i, i + splitNum);
         }
-
-        return intArray;
+        return strings;
     }
+
 
     /**
      * 根据长度返回随机字符串
      */
-    public static String getRandomString(int length) {
-        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    public static String getRandomString(String randomList, int length) {
         Random random = new Random();
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; i++) {
-            int number = random.nextInt(62);
-            sb.append(str.charAt(number));
+            int number = random.nextInt(randomList.length());
+            sb.append(randomList.charAt(number));
         }
         return sb.toString();
     }
@@ -92,7 +139,7 @@ public class stringUtils {
      *
      * @return
      */
-    public static String[] hanleFieldType(String str) {
+    public static String[] handleFieldType(String str) {
         /* 如Ljava.lang.Object;  就要被拆开为  L java.lang.Object ;
          主要有这几种类型: B - byte，C - char，D - double，F - float，I - int，J - long，S - short，Z - boolean，V - void，L - 对象类型( 如Ljava/lang/String; )，数组 - 每一个维度前置使用[表示
            (这几种类型可以随意组合!,所以要做好对应的处理,如 IL java/lang/String;)

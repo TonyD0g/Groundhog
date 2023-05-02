@@ -29,17 +29,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "D:/Coding/Groundhog",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Coding/Groundhog&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.HTML&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="应用程序.Socket">
+}</component>
+  <component name="RunManager" selected="应用程序.stringUtils">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.sec.Main" />
       <module name="Groundhog" />
@@ -54,9 +55,25 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="randomSalt" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.sec.Crypt.randomSalt" />
+      <module name="Groundhog" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="stringUtils" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.sec.utils.stringUtils" />
+      <module name="Groundhog" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="应用程序.stringUtils" />
         <item itemvalue="应用程序.Socket" />
+        <item itemvalue="应用程序.randomSalt" />
         <item itemvalue="应用程序.Main" />
       </list>
     </recent_temporary>
@@ -71,6 +88,14 @@
       <updated>1682941010940</updated>
       <workItem from="1682941012284" duration="1000" />
       <workItem from="1682941114681" duration="14561000" />
+      <workItem from="1682990330310" duration="888000" />
+      <workItem from="1682993569134" duration="4685000" />
+      <workItem from="1683000149772" duration="614000" />
+      <workItem from="1683000781288" duration="14623000" />
+      <workItem from="1683022931840" duration="114000" />
+      <workItem from="1683025482993" duration="531000" />
+      <workItem from="1683031130268" duration="4245000" />
+      <workItem from="1683035827470" duration="5858000" />
     </task>
     <servers />
   </component>
@@ -79,8 +104,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
-          <line>65</line>
-          <option name="timeStamp" value="5" />
+          <line>84</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
