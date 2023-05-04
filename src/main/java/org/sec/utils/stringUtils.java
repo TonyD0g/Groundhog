@@ -4,49 +4,96 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class stringUtils {
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        generatePassword();
+    public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        //generatePassword();
     }
 
-    /** 依据Mysql文档对通讯过程的密码进行生成 */
-    public static void generatePassword() throws NoSuchAlgorithmException {
-        String hash1 = sha1("root");
-        String slat = "407e342f1021077c005c2d760c431d3b75461d5876";
-        String hash2 = sha1(slat + sha1(hash1));
+    /**
+     * 依据Mysql文档对通讯过程的密码进行生成
+     *
+     * @return
+     */
+    public static byte[] generatePassword(String password,String slat) throws NoSuchAlgorithmException {
+        byte[] buff = passwordHashStage1(password);
 
-        int maxLength = Math.max(hash1.length(), hash2.length());
-        char[] charArr1 = String.format("%-" + maxLength + "s", hash1).toCharArray();
-        char[] charArr2 = String.format("%-" + maxLength + "s", hash2).toCharArray();
+        byte[] passwordHash = new byte[buff.length];
+        System.arraycopy(buff, 0, passwordHash, 0, buff.length);
+        passwordHash = passwordHashStage2(passwordHash, hexToByteArray(slat));
 
-        char[] result = new char[maxLength];
-        for (int i = 0; i < maxLength; i++) {
-            result[i] = (char) (charArr1[i] ^ charArr2[i]);
+        byte[] packetDataAfterSalt = new byte[20];
+        System.arraycopy(hexToByteArray(slat), 0, packetDataAfterSalt, 0, 20);
+        byte[] mysqlScrambleBuff = new byte[20];
+
+        xorString(packetDataAfterSalt, mysqlScrambleBuff, passwordHash, 20);
+        xorString(mysqlScrambleBuff, buff, buff, 20);
+
+        // 最后发送buff即可
+        return buff;
+    }
+
+    public static void xorString(byte[] from, byte[] to, byte[] scramble, int length) {
+        int pos = 0;
+
+        for (int scrambleLength = scramble.length; pos < length; ++pos) {
+            to[pos] = (byte) (from[pos] ^ scramble[pos % scrambleLength]);
         }
-        String xorResult = new String(result);
-        System.out.println(xorResult);
-    }
-    public static String sha1(String message) throws NoSuchAlgorithmException {
-        // 创建SHA-1加密算法对象
-        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-        // 对消息进行加密
-        byte[] hashedMessage = sha1.digest(message.getBytes());
 
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashedMessage) {
-            hexString.append(String.format("%02x", b));
+    }
+
+    /**
+     * 实现类似于php的sha1函数
+     */
+    public static byte[] passwordHashStage1(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        StringBuilder cleansedPassword = new StringBuilder();
+        int passwordLength = password.length();
+
+        for (int i = 0; i < passwordLength; ++i) {
+            char c = password.charAt(i);
+            if (c != ' ' && c != '\t') {
+                cleansedPassword.append(c);
+            }
         }
 
-        return hexString.toString();
+        return md.digest(getBytes(cleansedPassword.toString()));
     }
+
+    public static byte[] getBytes(String value) {
+        String platformEncoding = System.getProperty("file.encoding");
+        try {
+            return getBytes((String) value, 0, value.length(), platformEncoding);
+        } catch (UnsupportedEncodingException var2) {
+            return null;
+        }
+    }
+
+    public static byte[] getBytes(String value, int offset, int length, String encoding) throws UnsupportedEncodingException {
+        Charset cs = StandardCharsets.UTF_8; // findCharset(encoding);
+        ByteBuffer buf = cs.encode(CharBuffer.wrap(value.toCharArray(), offset, length));
+        int encodedLen = buf.limit();
+        byte[] asBytes = new byte[encodedLen];
+        buf.get(asBytes, 0, encodedLen);
+        return asBytes;
+    }
+
+    public static byte[] passwordHashStage2(byte[] hashedPassword, byte[] salt) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        md.update(salt, 0, 4);
+        md.update(hashedPassword, 0, 20);
+        return md.digest();
+    }
+
 
     /**
      * Hex Stream直接转为byte数组,类似于python的 b"\x12"

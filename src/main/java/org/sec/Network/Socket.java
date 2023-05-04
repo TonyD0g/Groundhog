@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.sec.Constant.configuration;
 import org.sec.utils.stringUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class Socket extends Thread {
     public Socket(int port) throws IOException {
         serverSocket = new ServerSocket(port);
     }
+
     public void DeceptionScanner() throws IOException {
         while (true) {
             java.net.Socket server = null;
@@ -43,11 +45,11 @@ public class Socket extends Thread {
                 out.write(stringUtils.hexToByteArray(configuration.flushVersionText()));
                 out.flush();
                 byte[] bys = new byte[1024];
-                in.read(bys);
+                in.read(bys);   // 读取客户端发来的账号密码并验证
 
                 out.write(configuration.verificationText); // res ok
                 out.flush();
-                bys = new byte[9999];
+                bys = new byte[1024];
                 in.read(bys);
 
 
@@ -72,7 +74,7 @@ public class Socket extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
-            }finally {
+            } finally {
                 server.close();
             }
         }
@@ -82,6 +84,9 @@ public class Socket extends Thread {
         while (true) {
             java.net.Socket server = null;
             try {
+                byte[] clientPassword = new byte[20];
+                byte[] clientUserAccount = new byte[20];
+
                 server = serverSocket.accept();
                 logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
                 DataInputStream in = new DataInputStream(server.getInputStream());
@@ -89,11 +94,17 @@ public class Socket extends Thread {
 
                 out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
                 out.flush();
-                in.read();  // 接受客户端发来的账号密码
+                byte[] bys = new byte[1024]; // 下标为41~61为客户端发来的password
+                in.read(bys);
+                for (int i = 0; i < 20; i++) {
+                    clientPassword[i] = bys[42 + i];
+                }
 
-                out.write(configuration.verificationText);
+                // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功
+
+                out.write(configuration.verificationText);  // res ok
                 out.flush();
-                byte[] bys = new byte[9999];
+                bys = new byte[1024];
                 in.read(bys);
 
                 String filename = "D:\\1.txt";
@@ -102,7 +113,7 @@ public class Socket extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
-            }finally {
+            } finally {
                 server.close();
             }
         }
