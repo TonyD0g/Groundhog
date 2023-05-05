@@ -207,7 +207,7 @@ public class FileUtils {
     }
 
     /**
-     * 将多行写到文件,再次使用该函数会清空文件中的内容 (写入)
+     * 将多行写到文件,append为true时会启用文件追加 (写入)
      */
     public static void writeLines(String filepath, List<String> lines,boolean append) {
         if (lines == null || lines.size() < 1) return;

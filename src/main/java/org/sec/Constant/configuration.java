@@ -6,6 +6,9 @@ import org.sec.utils.stringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +30,11 @@ public class configuration {
             filename2.createNewFile();
         }
         wantReadList = FileUtils.readLines(".\\wantReadList.txt");
+
+        File filename3 = new File(".\\blockIpList.txt");
+        if (!filename3.exists()) {
+            filename3.createNewFile();
+        }
     }
 
 
@@ -53,6 +61,8 @@ public class configuration {
     // 创建 userInfo.txt 文件,里面保存着账号和密码,使用空格进行分割
     public static String correctUserInfo;
 
+    public static String blockIpList;
+
     // 验证信息
     public static byte[] verificationText = {0x07, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00};
 
@@ -62,6 +72,56 @@ public class configuration {
     public static byte[] showWarnings = {0x01, 0x00, 0x00, 0x01, 0x03, 0x1b, 0x00, 0x00, 0x02, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x05, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x00, 0x0c, 0x08, 0x00, 0x07, 0x00, 0x00, 0x00, (byte) 0xfd, 0x01, 0x00, 0x1f, 0x00, 0x00, 0x1a, 0x00, 0x00, 0x03, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x04, 0x43, 0x6f, 0x64, 0x65, 0x00, 0x0c, 0x3f, 0x00, 0x04, 0x00, 0x00, 0x00, 0x03, (byte) 0xa1, 0x00, 0x00, 0x00, 0x00, 0x1d, 0x00, 0x00, 0x04, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x00, 0x0c, 0x08, 0x00, 0x00, 0x02, 0x00, 0x00, (byte) 0xfd, 0x01, 0x00, 0x1f, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, (byte) 0xfe, 0x00, 0x00, 0x02, 0x00, 0x68, 0x00, 0x00, 0x06, 0x07, 0x57, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x04, 0x31, 0x33, 0x36, 0x36, 0x5a, 0x49, 0x6e, 0x63, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x20, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x20, 0x27, 0x5c, 0x78, 0x44, 0x36, 0x5c, 0x78, 0x44, 0x30, 0x5c, 0x78, 0x42, 0x39, 0x5c, 0x78, 0x46, 0x41, 0x5c, 0x78, 0x42, 0x31, 0x5c, 0x78, 0x45, 0x41, 0x2e, 0x2e, 0x2e, 0x27, 0x20, 0x66, 0x6f, 0x72, 0x20, 0x63, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x20, 0x27, 0x56, 0x41, 0x52, 0x49, 0x41, 0x42, 0x4c, 0x45, 0x5f, 0x56, 0x41, 0x4c, 0x55, 0x45, 0x27, 0x20, 0x61, 0x74, 0x20, 0x72, 0x6f, 0x77, 0x20, 0x31, 0x05, 0x00, 0x00, 0x07, (byte) 0xfe, 0x00, 0x00, 0x02, 0x00};
 
     public static String showCollation = "01000001031b00000203646566000000054c6576656c000c080007000000fd01001f00001a0000030364656600000004436f6465000c3f000400000003a1000000001d00000403646566000000074d657373616765000c080000020000fd01001f000005000005fe000002006a000006075761726e696e6704313336365c496e636f727265637420737472696e672076616c75653a20275c7844365c7844305c7842395c7846415c7842315c7845412e2e2e2720666f7220636f6c756d6e20275641524941424c455f56414c55452720617420726f772034383505000007fe00000200";
+
+    // 数据包长度
+    public static String packetLength = "";
+    // 客户端ip,格式为packet中byte
+    public static String clientIp = "";
+    public static String errorCode1129 = packetLength + "006904486f73742027" + clientIp + "2720697320626c6f636b65642062656361757365206f66206d616e7920636f6e6e656374696f6e206572726f72733b20756e626c6f636b207769746820276d7973716c61646d696e20666c7573682d686f73747327";
+
+    /**
+     * 只要连接出错了,就将ip记录进 blockIpList.txt,并返回一个1129错误码
+     */
+    public static void recordAndReturn1129(java.net.Socket server,String ip) throws UnknownHostException {
+        // 0.只要连接出错了,就将ip记录进 blockIpList.txt
+        List<String> writeLines = new ArrayList<>();
+        writeLines.add(ip);
+        FileUtils.writeLines(".\\blockIpList.txt", writeLines, true);
+
+        // 1.并返回一个1129错误码
+        // 1-1.生成packet Length
+        int totalLength = 98 + ip.length() - 4;
+        String tmpStr1;
+        String[] tmpStr2 = new String[4];
+        StringBuilder middleStr = new StringBuilder();
+        if (totalLength <= 255) {
+            middleStr.append(String.format("%02x", totalLength)).append("0000");
+        } else if (totalLength <= 65280) {
+            tmpStr1 = String.format("%04x", totalLength);
+            for (int i = 0; i < 2; i++) {
+                tmpStr2[i] = tmpStr1.substring(i, i + 2);
+            }
+            middleStr.append(tmpStr2[1]).append(tmpStr2[0]).append("0000");
+        } else if (totalLength <= 16711680) {
+            tmpStr1 = String.format("%06x", totalLength);
+            for (int i = 0; i < 3; i++) {
+                tmpStr2[i] = tmpStr1.substring(i, i + 2);
+            }
+            middleStr.append(tmpStr2[2]).append(tmpStr2[1]).append(tmpStr2[0]).append("0000");
+
+        }
+        packetLength = middleStr.toString();
+
+        // 1-2.生成clientIp,将clientIp转换为对应byte,如 "10." 转为 => "31302e"
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ip.length(); i++) {
+            sb.append(Integer.toHexString(ip.charAt(i)));
+        }
+        clientIp = sb.toString();
+
+        // 1-3.out.write(1129 Error Code);
+
+    }
 
     public static String flushVersionText() throws IOException {
         randomSaltValue = random.randomSalt();

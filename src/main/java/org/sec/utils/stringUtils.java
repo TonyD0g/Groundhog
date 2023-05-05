@@ -92,6 +92,16 @@ public class stringUtils {
         return md.digest();
     }
 
+    /**
+     * byte数组直接转为Hex Stream,如byte = 0xfa,直接拼接到String对象中：String a = "fa";
+     */
+    public static String byteArrayToHex(byte[] bytes) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (byte b : bytes) {
+            stringBuilder.append(String.format("%02x", b));
+        }
+        return stringBuilder.toString();
+    }
 
     /**
      * Hex Stream直接转为byte数组,类似于python的 b"\x12"
@@ -100,16 +110,6 @@ public class stringUtils {
      */
     public static byte[] hexToByteArray(String hexString) {
         return DatatypeConverter.parseHexBinary(hexString); // 转换为字节数组
-    }
-
-    public static void x1(String str) {
-        String[] test = stringUtils.splitStr(str, 2);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String j : test) {
-            // stringBuilder.append("0x" + j + ",");
-            stringBuilder.append("\\x" + j);
-        }
-        System.out.println(stringBuilder);
     }
 
     /**
