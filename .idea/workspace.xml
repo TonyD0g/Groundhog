@@ -117,18 +117,17 @@
       <workItem from="1683200594251" duration="39000" />
       <workItem from="1683200703466" duration="58000" />
       <workItem from="1683200879441" duration="5069000" />
+      <workItem from="1683239513101" duration="643000" />
+      <workItem from="1683241298058" duration="13008000" />
     </task>
     <servers />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
-          <line>94</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="clientUsername" />
+        <watch expression="clientPassword" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

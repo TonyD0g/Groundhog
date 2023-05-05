@@ -1,27 +1,43 @@
 package org.sec.Constant;
 
 import org.sec.Crypt.random;
+import org.sec.utils.FileUtils;
 import org.sec.utils.stringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 /**
  * 存放一些基础配置
  */
 public class configuration {
-    private static configuration instanceThreadId;
-
-    private configuration() {
+    // 单例模式,将只需要一次加载的数据填入该函数中
+    private configuration() throws IOException {
         ThreadId = Integer.parseInt(stringUtils.getRandomString("0123456789", 3));
+        correctUserInfo = ".\\correctUserInfo.txt";
+        File filename1 = new File(configuration.correctUserInfo);
+        if (!filename1.exists()) {
+            filename1.createNewFile();
+        }
+
+        File filename2 = new File(".\\wantReadList.txt");
+        if (!filename2.exists()) {
+            filename2.createNewFile();
+        }
+        wantReadList = FileUtils.readLines(".\\wantReadList.txt");
     }
 
-    public static configuration getInstanceThreadId() {
+
+    public static configuration getInstanceThreadId() throws IOException {
         if (instanceThreadId == null) {
             instanceThreadId = new configuration();
         }
         return instanceThreadId;
     }
 
+    private static configuration instanceThreadId;
     // 蜜罐开放的端口
     public static int PORT = 3306;
 
@@ -29,7 +45,13 @@ public class configuration {
     public static int ThreadId;
 
     // 蜜罐想要读取的文件
-    public static String[] fileList;
+    public static List<String> wantReadList;
+
+    // 记录随机生成的salt
+    public static String randomSaltValue;
+
+    // 创建 userInfo.txt 文件,里面保存着账号和密码,使用空格进行分割
+    public static String correctUserInfo;
 
     // 验证信息
     public static byte[] verificationText = {0x07, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00};
@@ -41,9 +63,9 @@ public class configuration {
 
     public static String showCollation = "01000001031b00000203646566000000054c6576656c000c080007000000fd01001f00001a0000030364656600000004436f6465000c3f000400000003a1000000001d00000403646566000000074d657373616765000c080000020000fd01001f000005000005fe000002006a000006075761726e696e6704313336365c496e636f727265637420737472696e672076616c75653a20275c7844365c7844305c7842395c7846415c7842315c7845412e2e2e2720666f7220636f6c756d6e20275641524941424c455f56414c55452720617420726f772034383505000007fe00000200";
 
-    public static String flushVersionText() {
-        String randomSaltValue = random.randomSalt();
-        return "4a0000000a382e302e313200" + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 18) + "ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(18) + "6d7973716c5f6e61746976655f70617373776f726400";
+    public static String flushVersionText() throws IOException {
+        randomSaltValue = random.randomSalt();
+        return "4a0000000a382e302e313200" + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 16) + "00ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(16) + "006d7973716c5f6e61746976655f70617373776f726400";
     }
 
 }

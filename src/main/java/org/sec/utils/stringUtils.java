@@ -21,10 +21,8 @@ public class stringUtils {
 
     /**
      * 依据Mysql文档对通讯过程的密码进行生成
-     *
-     * @return
      */
-    public static byte[] generatePassword(String password,String slat) throws NoSuchAlgorithmException {
+    public static byte[] generatePassword(String password, String slat) throws NoSuchAlgorithmException {
         byte[] buff = passwordHashStage1(password);
 
         byte[] passwordHash = new byte[buff.length];

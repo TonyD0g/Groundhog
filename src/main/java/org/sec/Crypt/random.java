@@ -3,13 +3,15 @@ package org.sec.Crypt;
 import org.sec.Constant.configuration;
 import org.sec.utils.stringUtils;
 
+import java.io.IOException;
+
 public class random {
 
     public static String randomSalt() {
         StringBuilder saltByte = new StringBuilder(new String());
         String middleByte1;
-        for (int i = 0; i < 22; i++) {
-            middleByte1 = stringUtils.getRandomString("0123456789abc", 2);
+        for (int i = 0; i < 20; i++) {
+            middleByte1 = stringUtils.getRandomString("0123456789", 2);
             saltByte.append(middleByte1);
         }
         return saltByte.toString();
@@ -18,7 +20,7 @@ public class random {
     /**
      * 生成随机ThreadId增长数
      */
-    public static String randomThreadIdIncrease() {
+    public static String randomThreadIdIncrease() throws IOException {
         int randomLength = Integer.parseInt(stringUtils.getRandomString("12", 1));
         StringBuilder stringBuilder = new StringBuilder();
         configuration.getInstanceThreadId().ThreadId = configuration.getInstanceThreadId().ThreadId + Integer.parseInt(stringUtils.getRandomString("0123456789", randomLength));
