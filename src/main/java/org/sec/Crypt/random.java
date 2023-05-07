@@ -23,7 +23,7 @@ public class random {
     public static String randomThreadIdIncrease() throws IOException {
         int randomLength = Integer.parseInt(stringUtils.getRandomString("12", 1));
         StringBuilder stringBuilder = new StringBuilder();
-        configuration.getInstanceThreadId().ThreadId = configuration.getInstanceThreadId().ThreadId + Integer.parseInt(stringUtils.getRandomString("0123456789", randomLength));
+        configuration.ThreadId = configuration.ThreadId + Integer.parseInt(stringUtils.getRandomString("0123456789", randomLength));
 
         if (configuration.ThreadId <= 255) {
             stringBuilder.append(String.format("%02x", configuration.ThreadId)).append("000000");

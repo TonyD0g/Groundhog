@@ -1,16 +1,13 @@
 package org.sec.Constant;
 
 import org.sec.Crypt.random;
+import org.sec.Network.Socket;
 import org.sec.utils.FileUtils;
 import org.sec.utils.stringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Random;
 
 /**
  * 存放一些基础配置
@@ -34,6 +31,11 @@ public class configuration {
         File filename3 = new File(".\\blockIpList.txt");
         if (!filename3.exists()) {
             filename3.createNewFile();
+        }
+        // 建"getData"文件夹,之后获取的数据都存放进去
+        File folder = new File("getData");
+        if (!folder.exists()) {
+            folder.mkdir();
         }
     }
 
@@ -61,8 +63,6 @@ public class configuration {
     // 创建 userInfo.txt 文件,里面保存着账号和密码,使用空格进行分割
     public static String correctUserInfo;
 
-    public static String blockIpList;
-
     // 验证信息
     public static byte[] verificationText = {0x07, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00};
 
@@ -77,33 +77,59 @@ public class configuration {
     public static String packetLength = "";
     // 客户端ip,格式为packet中byte
     public static String clientIp = "";
-    public static String errorCode1129 = packetLength + "006904486f73742027" + clientIp + "2720697320626c6f636b65642062656361757365206f66206d616e7920636f6e6e656374696f6e206572726f72733b20756e626c6f636b207769746820276d7973716c61646d696e20666c7573682d686f73747327";
+    public static String errorCode1129 = "";
+
+    public static String errorCode1045 = "";
 
     /**
-     * 只要连接出错了,就将ip记录进 blockIpList.txt,并返回一个1129错误码
+     * 获取本机的hostname,用于蜜罐伪造
      */
-    public static void recordAndReturn1129(java.net.Socket server,String ip) throws UnknownHostException {
-        // 0.只要连接出错了,就将ip记录进 blockIpList.txt
-        List<String> writeLines = new ArrayList<>();
-        writeLines.add(ip);
-        FileUtils.writeLines(".\\blockIpList.txt", writeLines, true);
+    private static String getHost() {
+        String command = "whoami"; // 要执行的系统命令
 
-        // 1.并返回一个1129错误码
-        // 1-1.生成packet Length
-        int totalLength = 98 + ip.length() - 4;
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(true);
+            Process process = builder.start();
+
+            InputStream inputStream = process.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            StringBuilder output = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+            process.waitFor(); // 等待进程结束并获取退出码
+            String host = output.toString();
+            if (host.contains(File.separator)) {
+                host = host.substring(0, host.lastIndexOf(File.separator));
+            }
+            output.setLength(0);
+            byte[] bytes = host.toUpperCase().getBytes(StandardCharsets.UTF_8);
+            for (byte b : bytes) {
+                output.append(String.format("%02X ", b));
+            }
+            return output.toString();
+        } catch (Exception ignored) {
+        }
+        return "";
+    }
+
+    private static void generatePacketLength(int packetLengthByInt) {
         String tmpStr1;
         String[] tmpStr2 = new String[4];
         StringBuilder middleStr = new StringBuilder();
-        if (totalLength <= 255) {
-            middleStr.append(String.format("%02x", totalLength)).append("0000");
-        } else if (totalLength <= 65280) {
-            tmpStr1 = String.format("%04x", totalLength);
+        if (packetLengthByInt <= 255) {
+            middleStr.append(String.format("%02x", packetLengthByInt)).append("0000");
+        } else if (packetLengthByInt <= 65280) {
+            tmpStr1 = String.format("%04x", packetLengthByInt);
             for (int i = 0; i < 2; i++) {
                 tmpStr2[i] = tmpStr1.substring(i, i + 2);
             }
             middleStr.append(tmpStr2[1]).append(tmpStr2[0]).append("0000");
-        } else if (totalLength <= 16711680) {
-            tmpStr1 = String.format("%06x", totalLength);
+        } else if (packetLengthByInt <= 16711680) {
+            tmpStr1 = String.format("%06x", packetLengthByInt);
             for (int i = 0; i < 3; i++) {
                 tmpStr2[i] = tmpStr1.substring(i, i + 2);
             }
@@ -111,6 +137,43 @@ public class configuration {
 
         }
         packetLength = middleStr.toString();
+    }
+
+    /**
+     * 登录失败时返回的error code
+     */
+    public static void return1045(DataOutputStream out, String ip) throws IOException {
+        errorCode1045 = "02ff15042332383030304163636573732064656e69656420666f7220757365722027";
+        errorCode1045 = errorCode1045 + stringUtils.byteArrayToHex(Socket.usernameByte) + "274027";
+        String host;
+        if (ip.equals("127.0.0.1")) {
+            host = "6c6f63616c686f7374";
+        } else {
+            host = getHost();
+        }
+        errorCode1045 = errorCode1045 + host + "2720287573696e672070617373776f72643a20";
+
+        String havePassword; // have password?
+        if (Socket.isHavePassword) {
+            havePassword = "594553";
+        } else {
+            havePassword = "4e4f";
+        }
+
+        errorCode1045 = errorCode1045 + havePassword + "29";
+        generatePacketLength((errorCode1045.length() / 2) - 1);
+        errorCode1045 = packetLength + errorCode1045;
+        out.write(stringUtils.hexToByteArray(errorCode1045));
+        out.flush();
+    }
+
+    /**
+     * 只要连接出错了,返回一个1129错误码
+     */
+    public static void return1129(DataOutputStream out, String ip) throws IOException {
+        // 1-1.生成packet Length
+        int totalLength = 98 + ip.length() - 4;
+        generatePacketLength(totalLength);
 
         // 1-2.生成clientIp,将clientIp转换为对应byte,如 "10." 转为 => "31302e"
         StringBuilder sb = new StringBuilder();
@@ -120,12 +183,13 @@ public class configuration {
         clientIp = sb.toString();
 
         // 1-3.out.write(1129 Error Code);
-
+        errorCode1129 = packetLength + "00ff6904486f73742027" + clientIp + "2720697320626c6f636b65642062656361757365206f66206d616e7920636f6e6e656374696f6e206572726f72733b20756e626c6f636b207769746820276d7973716c61646d696e20666c7573682d686f73747327";
+        out.write(stringUtils.hexToByteArray(errorCode1129));
     }
 
     public static String flushVersionText() throws IOException {
         randomSaltValue = random.randomSalt();
-        return "4a0000000a382e302e313200" + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 16) + "00ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(16) + "006d7973716c5f6e61746976655f70617373776f726400";
+        return "4a0000000a352e372e323600" + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 16) + "00ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(16) + "006d7973716c5f6e61746976655f70617373776f726400";
     }
 
 }
