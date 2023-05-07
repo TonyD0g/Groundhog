@@ -15,7 +15,9 @@ import java.util.List;
 public class configuration {
     // 单例模式,将只需要一次加载的数据填入该函数中
     private configuration() throws IOException {
-        ThreadId = Integer.parseInt(stringUtils.getRandomString("0123456789", 3));
+        // todo 重启刷新blockList.txt
+        ThreadId = Integer.parseInt(stringUtils.getRandomString("0123456789", 4));
+        choiceVersion = random.randomVersion();
         correctUserInfo = ".\\correctUserInfo.txt";
         File filename1 = new File(configuration.correctUserInfo);
         if (!filename1.exists()) {
@@ -39,8 +41,7 @@ public class configuration {
         }
     }
 
-
-    public static configuration getInstanceThreadId() throws IOException {
+    public static configuration getInstance() throws IOException {
         if (instanceThreadId == null) {
             instanceThreadId = new configuration();
         }
@@ -72,6 +73,12 @@ public class configuration {
     public static byte[] showWarnings = {0x01, 0x00, 0x00, 0x01, 0x03, 0x1b, 0x00, 0x00, 0x02, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x05, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x00, 0x0c, 0x08, 0x00, 0x07, 0x00, 0x00, 0x00, (byte) 0xfd, 0x01, 0x00, 0x1f, 0x00, 0x00, 0x1a, 0x00, 0x00, 0x03, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x04, 0x43, 0x6f, 0x64, 0x65, 0x00, 0x0c, 0x3f, 0x00, 0x04, 0x00, 0x00, 0x00, 0x03, (byte) 0xa1, 0x00, 0x00, 0x00, 0x00, 0x1d, 0x00, 0x00, 0x04, 0x03, 0x64, 0x65, 0x66, 0x00, 0x00, 0x00, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x00, 0x0c, 0x08, 0x00, 0x00, 0x02, 0x00, 0x00, (byte) 0xfd, 0x01, 0x00, 0x1f, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, (byte) 0xfe, 0x00, 0x00, 0x02, 0x00, 0x68, 0x00, 0x00, 0x06, 0x07, 0x57, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x04, 0x31, 0x33, 0x36, 0x36, 0x5a, 0x49, 0x6e, 0x63, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x20, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x20, 0x27, 0x5c, 0x78, 0x44, 0x36, 0x5c, 0x78, 0x44, 0x30, 0x5c, 0x78, 0x42, 0x39, 0x5c, 0x78, 0x46, 0x41, 0x5c, 0x78, 0x42, 0x31, 0x5c, 0x78, 0x45, 0x41, 0x2e, 0x2e, 0x2e, 0x27, 0x20, 0x66, 0x6f, 0x72, 0x20, 0x63, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x20, 0x27, 0x56, 0x41, 0x52, 0x49, 0x41, 0x42, 0x4c, 0x45, 0x5f, 0x56, 0x41, 0x4c, 0x55, 0x45, 0x27, 0x20, 0x61, 0x74, 0x20, 0x72, 0x6f, 0x77, 0x20, 0x31, 0x05, 0x00, 0x00, 0x07, (byte) 0xfe, 0x00, 0x00, 0x02, 0x00};
 
     public static String showCollation = "01000001031b00000203646566000000054c6576656c000c080007000000fd01001f00001a0000030364656600000004436f6465000c3f000400000003a1000000001d00000403646566000000074d657373616765000c080000020000fd01001f000005000005fe000002006a000006075761726e696e6704313336365c496e636f727265637420737472696e672076616c75653a20275c7844365c7844305c7842395c7846415c7842315c7845412e2e2e2720666f7220636f6c756d6e20275641524941424c455f56414c55452720617420726f772034383505000007fe00000200";
+
+    // 可选版本集合,已有:8.0.12 ,5.0.97, 5.1.60 ,5.5.29
+    public static String[] versionList =
+            {"352e372e323600", "382e302e313200", "352e302e393700", "352e312e363000", "352e352e323900"};
+    // 已选版本
+    public static String choiceVersion;
 
     // 数据包长度
     public static String packetLength = "";
@@ -108,7 +115,7 @@ public class configuration {
             output.setLength(0);
             byte[] bytes = host.toUpperCase().getBytes(StandardCharsets.UTF_8);
             for (byte b : bytes) {
-                output.append(String.format("%02X ", b));
+                output.append(String.format("%02X", b));
             }
             return output.toString();
         } catch (Exception ignored) {
@@ -116,6 +123,11 @@ public class configuration {
         return "";
     }
 
+    // todo 这里如果涉及小端存储的话,就会存在问题.待查看是什么存储模式
+
+    /**
+     * 生成PacketLength
+     */
     private static void generatePacketLength(int packetLengthByInt) {
         String tmpStr1;
         String[] tmpStr2 = new String[4];
@@ -189,7 +201,7 @@ public class configuration {
 
     public static String flushVersionText() throws IOException {
         randomSaltValue = random.randomSalt();
-        return "4a0000000a352e372e323600" + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 16) + "00ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(16) + "006d7973716c5f6e61746976655f70617373776f726400";
+        return "4a0000000a" + choiceVersion + random.randomThreadIdIncrease() + randomSaltValue.substring(0, 16) + "00ffffc00200ffc31500000000000000000000" + randomSaltValue.substring(16) + "006d7973716c5f6e61746976655f70617373776f726400";
     }
 
 }
