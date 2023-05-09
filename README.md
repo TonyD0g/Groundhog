@@ -4,7 +4,7 @@
 
 使用java8开发,**一次编写,到处撒野**
 
-
+**还未发布正式版**
 
 # 特性
 
@@ -16,6 +16,7 @@
 5.自动随机选择mysql版本。
 6.增加操作日志
 7.读取wantReanList.txt,随机选一个读取
+8.重启刷新blockIp.txt
 ```
 
 
@@ -23,5 +24,4 @@
 # TODO
 
 - 设置connect_timeout
-- 重启刷新blockIp.txt
 - 成功欺骗扫描器
