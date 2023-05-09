@@ -225,7 +225,7 @@ public class FileUtils {
                 out = new FileOutputStream(file,true);
             }
             else {
-                out = new FileOutputStream(file);
+                out = Files.newOutputStream(file.toPath());
             }
             writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
             bufferedWriter = new BufferedWriter(writer);
@@ -270,6 +270,23 @@ public class FileUtils {
             delete(file);
         }
         file.mkdir();
+    }
+
+    /**
+     * 清空文件内容
+     */
+    public static void flushFile(String filename) throws IOException {
+        try{
+            // 创建文件对象
+            File file = new File(filename);
+            // 创建 FileWriter 对象
+            FileWriter writer = new FileWriter(file);
+            // 将文件内容清空
+            writer.write("");
+            writer.close();
+        }catch (Exception ignored){
+
+        }
     }
 
     /**

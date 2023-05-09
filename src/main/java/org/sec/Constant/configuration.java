@@ -28,11 +28,19 @@ public class configuration {
         if (!filename2.exists()) {
             filename2.createNewFile();
         }
-        wantReadList = FileUtils.readLines(".\\wantReadList.txt");
 
         File filename3 = new File(".\\blockIpList.txt");
         if (!filename3.exists()) {
             filename3.createNewFile();
+        }
+        FileUtils.flushFile(".\\blockIpList.txt"); // 刷新blockIp.txt
+
+        // 操作日志.log
+        currentTime = stringUtils.thisTime(timeFormat);
+        logFileName = ".\\" + currentTime + ".log";
+        File filename4 = new File(logFileName);
+        if (!filename4.exists()) {
+            filename4.createNewFile();
         }
         // 建"getData"文件夹,之后获取的数据都存放进去
         File folder = new File("getData");
@@ -47,7 +55,10 @@ public class configuration {
         }
         return instanceThreadId;
     }
+    public static String currentTime;
+    public static String timeFormat = "yyyy-MM-dd";
 
+    public static String logFileName;
     private static configuration instanceThreadId;
     // 蜜罐开放的端口
     public static int PORT = 3306;

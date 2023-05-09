@@ -15,9 +15,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class stringUtils {
-    public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        //generatePassword();
-    }
     /**
      * byte数组直接转为Hex Stream,如byte = 0xfa,直接拼接到String对象中：String a = "fa";
      */
@@ -240,9 +237,10 @@ public class stringUtils {
     /**
      * 返回当前时间(yyyy-MM-dd HH:mm:ss)
      */
-    public static String thisTime() {
+    public static String thisTime(String format) {
+        // format如: "yyyy-MM-dd hh:mm:ss"
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
         return dateFormat.format(date);
     }
 
