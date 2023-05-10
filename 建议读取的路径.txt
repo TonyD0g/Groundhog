@@ -1,0 +1,50 @@
+一.Windows:
+获取主机名:
+	C:\Windows\PFRO.log
+
+微信(默认安装路径的条件下):
+	获取微信id:
+	C:\Users\<目标用户名>\Documents\WeChat Files\All Users\config\config.data
+
+	获取到手机号、微信号:
+	D:/Documents/WeChat Files/<wxid>/config/AccInfo.dat
+
+cobalt strike反制:
+	C:\Users\<目标用户名>\.aggressor.prop
+
+chrome:
+	chrome的login data:
+	C:/Users/<目标用户名>/AppData/Local/Google/Chrome/User Data/Default/Login Data
+	chrome的History:
+	C:/Users/<目标用户名>/AppData/Local/Google/Chrome/User Data/Default/History
+
+二.Mac:
+用户id: 
+	/var/log/system.log
+
+微信id:
+	/Users/{用户名}/Library/Containers/com.tencent.xinWeChat/Data/Library/Application Support/com.tencent.xinWeChat/2.0b4.0.9/topinfo.data
+
+history:
+	/Users/{用户名}/.bash_history
+	/Users/{用户名}/.zsh_history
+
+三.Linux:
+	/root/.ssh/authorized_keys
+	/root/.ssh/id_rsa
+	/root/.ssh/id_ras.keystore
+	/root/.ssh/known_hosts //记录每个访问计算机用户的公钥
+	/etc/passwd
+	/etc/shadow
+	/etc/my.cnf //mysql配置文件
+	/etc/httpd/conf/httpd.conf //apache配置文件
+	/root/.bash_history //用户历史命令记录文件
+	/root/.mysql_history //mysql历史命令记录文件
+	/proc/mounts //记录系统挂载设备
+	/porc/config.gz //内核配置文件
+	/var/lib/mlocate/mlocate.db //全文件路径
+	/porc/self/cmdline //当前进程的cmdline参数
+
+
+Jarvis
+默认用户名:Administrator

@@ -1,6 +1,8 @@
 package org.sec;
 
 import org.apache.log4j.Logger;
+import org.sec.Constant.configuration;
+import org.sec.Network.Socket;
 import org.sec.input.Logo;
 import org.sec.start.Application;
 
@@ -10,10 +12,9 @@ public class Main {
     public static void main(String[] args) {
 
         Logo.PrintLogo();
-        logger.info("start xxx application");
-        logger.info("please wait 30 second...");
-
+        logger.info("start Groundhog-0.0.9 application");
         // 运行主逻辑
-        Application.start(args);
+        Socket.connect(configuration.PORT);
+        //Application.start(args);
     }
 }

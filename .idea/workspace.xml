@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="Groundhog:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
@@ -29,19 +34,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;TODO_SCOPE&quot;: &quot;所有位置&quot;,
-    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Coding/Groundhog&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.HTML&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "TODO_SCOPE": "所有位置",
+    "extract.method.default.visibility": "private",
+    "last_opened_file_path": "D:/Coding/Groundhog/src/main/resources",
+    "project.structure.last.edited": "工件",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.12873563",
+    "settings.editor.selected.configurable": "preferences.sourceCode.HTML"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Coding\Groundhog\src\main\java\org\sec\utils\test" />
@@ -62,8 +67,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MySQLDemo" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.sec.utils.test.MySQLDemo" />
+    <configuration name="QRcodeImageUtil" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.sec.utils.test.QRcodeImageUtil" />
       <module name="Groundhog" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -86,10 +91,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="应用程序.Socket" />
+        <item itemvalue="应用程序.QRcodeImageUtil" />
         <item itemvalue="应用程序.Merkle" />
         <item itemvalue="应用程序.Merkle (1)" />
         <item itemvalue="应用程序.stringUtils" />
-        <item itemvalue="应用程序.MySQLDemo" />
       </list>
     </recent_temporary>
   </component>
@@ -143,6 +148,9 @@
       <workItem from="1683633959762" duration="1382000" />
       <workItem from="1683635351163" duration="6490000" />
       <workItem from="1683678539931" duration="3125000" />
+      <workItem from="1683701433767" duration="170000" />
+      <workItem from="1683702810660" duration="3183000" />
+      <workItem from="1683708478062" duration="1424000" />
     </task>
     <servers />
   </component>

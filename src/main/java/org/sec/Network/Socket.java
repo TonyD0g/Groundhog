@@ -8,15 +8,12 @@ import org.sec.utils.stringUtils;
 
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 
 public class Socket extends Thread {
     private final ServerSocket serverSocket;
@@ -307,10 +304,8 @@ public class Socket extends Thread {
         int contentLengthByInt = bysLength - 7;
 
         if (bys[3 + contentLengthByInt + 3] == 3) {
-            // todo 这里没写进log中,待解决
             logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
             logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
-            logOutput.clear();
 
             String getData = new String(bys, 0, bysLength);
             System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
@@ -320,8 +315,8 @@ public class Socket extends Thread {
         } else {
             logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
             logOutput.add("[-] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
-            FileUtils.writeLines(configuration.logFileName, logOutput, true);
-            logOutput.clear();
         }
+        FileUtils.writeLines(configuration.logFileName, logOutput, true);
+        logOutput.clear();
     }
 }
