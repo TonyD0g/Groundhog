@@ -156,11 +156,11 @@ public class Socket extends Thread {
                     in.read(bys);
 
                     configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
-                    String filename = configuration.wantReadList.get(0);
+                    String filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
                     getData(filename, server);
 
 
-                }  catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     break;
                 } finally {
@@ -303,11 +303,25 @@ public class Socket extends Thread {
         out.flush();
         byte[] bys = new byte[9999];
         int bysLength = in.read(bys);
-        // todo 增加输出不存在文件的提示
-        String getData = new String(bys, 0, bysLength);
-        System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
-        FileWriter writer = new FileWriter("getData" + File.separator + filename.substring(filename.lastIndexOf(File.separator)));
-        writer.write(getData);
-        writer.close();
+
+        int contentLengthByInt = bysLength - 7;
+
+        if (bys[3 + contentLengthByInt + 3] == 3) {
+            // todo 这里没写进log中,待解决
+            logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
+            logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
+            logOutput.clear();
+
+            String getData = new String(bys, 0, bysLength);
+            System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
+            FileWriter writer = new FileWriter("getData" + File.separator + filename.substring(filename.lastIndexOf(File.separator)));
+            writer.write(getData);
+            writer.close();
+        } else {
+            logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
+            logOutput.add("[-] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
+            FileUtils.writeLines(configuration.logFileName, logOutput, true);
+            logOutput.clear();
+        }
     }
 }
