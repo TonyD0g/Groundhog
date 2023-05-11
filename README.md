@@ -70,9 +70,9 @@ Navicat或cmd命令行输入:
 .\mysql -h 127.0.0.1 -u root -p --ssl-mode=DISABLED
 ```
 
+# 对抗
 
-
-# 与蜜罐识别器([检测目标Mysql数据库是不是蜜罐](https://github.com/BeichenDream/WhetherMysqlSham))对抗：
+#### 1.与蜜罐识别器([检测目标Mysql数据库是不是蜜罐](https://github.com/BeichenDream/WhetherMysqlSham))对抗：
 
 **(只是未连接前的对抗,因为mysql蜜罐的特殊性,连上只要输入命令就暴露了,所以只有一次攻击机会)**
 
@@ -90,10 +90,30 @@ Navicat或cmd命令行输入:
 
 
 
+#### 2.各类扫描器扫描结果
+
+- 不能直接利用,能扫出来是mysql,但需要使用cmd/Navicat连接才能利用:
+
+  -  kscan1.85
+
+  - Ladon911
+
+  - Yasso
+
+  - fscan
+
+    等一众端口扫描器,只扫端口不爆破
+
+- 可以直接利用,扫描器只要扫描了就中招:
+
+  - SNETCracker1.0 (需要关闭蜜罐的密码验证,否则不成功)
+
+- 爆破端口，但依旧无法利用
+
+  - PortBruteWin
+
 # TODO
 
-- 设置connect_timeout
-- 成功欺骗各种扫描器（依据mysql通讯包来选择回复还是不回复）
 - 支持大文件传输
 
 
