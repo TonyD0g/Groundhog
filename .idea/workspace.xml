@@ -156,6 +156,7 @@
       <workItem from="1683770199065" duration="6030000" />
       <workItem from="1683806012067" duration="1255000" />
       <workItem from="1683807658285" duration="7604000" />
+      <workItem from="1683851569551" duration="5054000" />
     </task>
     <servers />
   </component>
@@ -170,6 +171,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
           <line>99</line>
           <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
+          <line>307</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
