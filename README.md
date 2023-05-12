@@ -28,15 +28,19 @@ Groundhog只是第二种类型,且由于mysql蜜罐使用的Load data local infi
 # 特性
 
 ```md
-1.实现随机salt
-2.随机ThreadId,且ThreadId增长随机,开启蜜罐后会一直记住ThreadId(单例模式实现)	
-3.增加Mysql拉黑机制：如果连接错误的次数超过了"max_connect_errors"设置的次数，则该IP地址会被拉黑，直到MySQL服务器重启或者超过"connect_timeout"设置的时间段。
-4.增加登录验证识别,不会把任意输入的用户名以及密码当成正确的。
-5.自动随机选择mysql版本。
-6.增加操作日志
-7.动态读取wantReanList.txt,随机选一个读取
-8.重启或超过connect_timeout会刷新blockIp.txt
-9.服务端获取路径时,如果文件不存在,会输出不存在文件的提示
+1.实现随机salt	[1]
+2.随机ThreadId,且ThreadId增长随机,开启蜜罐后会一直记住ThreadId(单例模式实现)		[1]
+3.增加Mysql拉黑机制：如果连接错误的次数超过了"max_connect_errors"设置的次数，则该IP地址会被拉黑，直到MySQL服务器重启或者超过"connect_timeout"设置的时间段。 [1]
+4.增加登录验证识别,不会把任意输入的用户名以及密码当成正确的 [1]
+5.自动随机mysql版本	[1]
+6.增加操作日志	[1]
+7.增加输出不存在文件的提示(从数据包的角度入手)	[1]
+8.支持动态修改wantReadList.txt	[1]
+9.从wantReadList.txt中全部顺序读取,然后去利用	[1]
+10.解析mysql通讯包	[1]
+11.处理[Malformed Packet: MySQL]:即00 00 00 02	[1]
+12.对SNETCracker扫描器自动关闭密码验证		[1]
+
 ```
 
 
@@ -119,6 +123,11 @@ Navicat或cmd命令行输入:
 # TODO
 
 - 支持大文件传输
+- 欺骗扫描器
+- 自定义是否开启密码验证
+- 设置connect_timeout
+- 修复mysql 2013错误
+- 生成log文件夹,并将之后生成的log文件扔进log文件夹
 
 
 
