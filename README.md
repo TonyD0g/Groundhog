@@ -70,7 +70,8 @@ Navicat或cmd命令行输入:
 .\mysql -h 127.0.0.1 -u root -p --ssl-mode=DISABLED
 
 注意:
-读取到的文件使用二进制文本编辑器打开,如UE
+1.读取到的文件使用二进制文本编辑器打开,如UE编辑器
+2.注意Windows和Linux文件路径的分界符,windows是\,Linux是/
 ```
 
 # 对抗
