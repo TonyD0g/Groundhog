@@ -9,7 +9,7 @@ import java.util.Random;
 public class random {
     public static String randomVersion() {
         Random r = new Random();
-        int randomNum = r.nextInt(5);
+        int randomNum = r.nextInt(4);
         return configuration.versionList[randomNum];
     }
 

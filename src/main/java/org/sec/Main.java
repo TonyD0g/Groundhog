@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
 
         Logo.PrintLogo();
-        logger.info("start Groundhog-0.1.2 application");
+        logger.info("start Groundhog-0.1.3 application");
         // 运行主逻辑
         Socket.connect(configuration.PORT);
         //Application.start(args);

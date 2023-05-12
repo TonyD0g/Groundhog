@@ -100,6 +100,8 @@ public class configuration {
     // 可选版本集合,已有:8.0.12 ,5.0.97 , 5.5.29
     public static String[] versionList =
             {"352e372e323600", "382e302e313200", "352e302e393700", "352e352e323900"};
+//    public static String[] versionList =
+//            {"352e302e393700"};
     // 已选版本
     public static String choiceVersion;
 
