@@ -40,15 +40,20 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;TODO_SCOPE&quot;: &quot;所有位置&quot;,
     &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Coding/C/UtilityRoom/SecurityProtocolAnalysis/CommunicationsSystem&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;工件&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Coding/Groundhog/src/main/java/org/sec/utils/test&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;库&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.12873563&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.HTML&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Coding\Groundhog\src\main\java\org\sec\utils\test" />
+      <recent name="D:\Coding\Groundhog" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Coding\Groundhog\src\main\java\org\sec\utils" />
       <recent name="D:\Coding\Groundhog\src\main\java\org\sec\utils\test" />
     </key>
   </component>
@@ -163,6 +168,10 @@
       <workItem from="1683868535203" duration="465000" />
       <workItem from="1683965999488" duration="254000" />
       <workItem from="1684200594604" duration="2706000" />
+      <workItem from="1684204258030" duration="6000" />
+      <workItem from="1684214184717" duration="442000" />
+      <workItem from="1684214633925" duration="838000" />
+      <workItem from="1684219017504" duration="2871000" />
     </task>
     <servers />
   </component>
@@ -173,20 +182,6 @@
           <properties class="java.lang.NullPointerException" package="java.lang" />
           <option name="timeStamp" value="10" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
-          <line>325</line>
-          <option name="timeStamp" value="33" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
-          <line>217</line>
-          <properties class="org.sec.Network.Socket" method="handlePassword">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="35" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>

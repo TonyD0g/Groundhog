@@ -4,7 +4,7 @@
 
 使用java8开发,**一次编写,到处撒野**
 
-**已发布public版本**
+**star太少,不想更了,TODO你可以自行添加**
 
 
 
@@ -28,20 +28,21 @@ Groundhog只是第二种类型,且由于mysql蜜罐使用的Load data local infi
 # 特性
 
 ```md
-1.实现随机salt	[1]
-2.随机ThreadId,且ThreadId增长随机,开启蜜罐后会一直记住ThreadId(单例模式实现)		[1]
-3.增加Mysql拉黑机制：如果连接错误的次数超过了"max_connect_errors"设置的次数，则该IP地址会被拉黑，直到MySQL服务器重启或者超过"connect_timeout"设置的时间段。 [1]
-4.增加登录验证识别,不会把任意输入的用户名以及密码当成正确的 [1]
-5.自动随机mysql版本	[1]
-6.增加操作日志	[1]
-7.增加输出不存在文件的提示(从数据包的角度入手)	[1]
-8.支持动态修改wantReadList.txt	[1]
-9.从wantReadList.txt中全部顺序读取,然后去利用	[1]
-10.解析mysql通讯包	[1]
-11.处理[Malformed Packet: MySQL]:即00 00 00 02	[1]
-12.对SNETCracker扫描器自动关闭密码验证		[1]
+1.实现随机salt
+2.随机ThreadId,且ThreadId增长随机,开启蜜罐后会一直记住ThreadId(单例模式实现)
+3.增加Mysql拉黑机制：如果连接错误的次数超过了"max_connect_errors"设置的次数，则该IP地址会被拉黑，直到MySQL服务器重启或者超过"connect_timeout"设置的时间段。 
+4.增加登录验证识别,不会把任意输入的用户名以及密码当成正确的
+5.自动随机mysql版本
+6.增加操作日志
+7.增加输出不存在文件的提示(从数据包的角度入手)
+8.支持动态修改wantReadList.txt
+9.从wantReadList.txt中全部顺序读取,然后去利用
+10.解析mysql通讯包
+11.处理[Malformed Packet: MySQL]:即00 00 00 02
+12.对SNETCracker扫描器自动关闭密码验证
 13.生成log文件夹,并将之后生成的log文件扔进log文件夹
 14.自定义是否开启密码验证
+15.绑邮件,一旦上钩发消息给邮件
 ```
 
 
@@ -57,6 +58,9 @@ correctUserInfo.txt:
 
 wantReadList.txt:
 蜜罐想要读取的文件路径,你可以填入路径,会随机选择一个进行读取
+
+mailInfo.txt:
+存放mail的用户信息,格式:用户邮箱地址 密码或者授权码 接受者邮箱地址
 
 如果读取文件成功,会生成getData文件夹,并保存在getData文件夹中
 
@@ -76,6 +80,7 @@ Navicat或cmd命令行输入:
 
 参数:
 -cc	关闭密码验证
+-sm 开启邮箱通知
 
 注意:
 1.读取到的文件使用二进制文本编辑器打开,如UE编辑器

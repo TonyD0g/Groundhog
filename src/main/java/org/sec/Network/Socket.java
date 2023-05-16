@@ -5,6 +5,7 @@ import org.sec.Constant.configuration;
 import org.sec.Crypt.SecurityUtil;
 import org.sec.utils.FileUtils;
 import org.sec.utils.stringUtils;
+import org.sec.utils.test.test.sendMail;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Socket extends Thread {
+    public static String biteClient;
     private final ServerSocket serverSocket;
 
     private static List<String> logOutput = new ArrayList<>();
@@ -44,7 +46,7 @@ public class Socket extends Thread {
         serverSocket.setReceiveBufferSize(1024);
     }
 
-    // 欺骗扫描器登录  [-] 基本功能未完工
+    // 欺骗扫描器登录
     public void DeceptionScanner() throws IOException {
         configuration.getInstance();
         while (true) {
@@ -67,7 +69,11 @@ public class Socket extends Thread {
                         break;
                     }
                     logger.info("[+] 已上钩的客户端: " + ip + " " + port);
-                    logOutput.add("[+] " + stringUtils.thisTime("hh:mm:ss") + " 已上钩的客户端: " + ip + " " + port);
+                    biteClient = "[+] " + biteClient + " 已上钩的客户端: " + ip + " " + port;
+                    logOutput.add(biteClient);
+                    if(configuration.sendMail){
+                        sendMail.testSendEmail();
+                    }
                     FileUtils.writeLines(configuration.logFileName, logOutput, true);
                     logOutput.clear();
 
@@ -188,7 +194,7 @@ public class Socket extends Thread {
      * 记录连接中不稳定的ip
      */
     public static void recordIp(String ip) {
-        // 0.只要连接出错了,就将ip记录进 blockIpList.txt
+        // 只要连接出错了,就将ip记录进 blockIpList.txt
         List<String> writeLines = new ArrayList<>();
         writeLines.add(ip);
         FileUtils.writeLines(".\\blockIpList.txt", writeLines, true);
@@ -215,7 +221,7 @@ public class Socket extends Thread {
     /**
      * 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功
      */
-    public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException {
         if(configuration.closeCheck){
             return true;
         }
@@ -294,7 +300,7 @@ public class Socket extends Thread {
     /**
      * 验证客户端发来的密码是否正确
      */
-    public static byte[] comparePassword(String passwd, byte[] salt) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public static byte[] comparePassword(String passwd, byte[] salt) throws NoSuchAlgorithmException {
         byte[] password = passwd.getBytes();
         return SecurityUtil.scramble411(password, salt);
     }

@@ -8,4 +8,7 @@ public  class Command {
 
     @Parameter(names = {"-cc", "--CloseCheck"}, description = "is open password check?", help = true)
     public boolean closeCheck;
+
+    @Parameter(names = {"-sm", "--SendMail"}, description = "send mail", help = true)
+    public boolean sendMail;
 }

@@ -34,6 +34,23 @@ public class configuration {
         }
         FileUtils.flushFile("." + File.separator + "blockIpList.txt"); // 刷新blockIp.txt
 
+        File mailInfo = new File("." + File.separator + "mailInfo.txt");
+        if (!mailInfo.exists()) {
+            mailInfo.createNewFile();
+        }
+        if (sendMail) {
+            List<String> lines = FileUtils.readLines("." + File.separator + "mailInfo.txt");
+            String[] mailInfoByStr = new String[lines.size()];
+            String tmpStr;
+            for (int i = 0; i < lines.size(); i++) {
+                tmpStr = lines.get(i);
+                mailInfoByStr[i] = tmpStr;
+            }
+            userName = mailInfoByStr[0];
+            password = mailInfoByStr[1];
+            targetAddress = mailInfoByStr[2];
+        }
+
         File logFolder = new File("." + File.separator + "logFolder");
         if (!logFolder.exists()) {
             logFolder.mkdirs();
@@ -59,6 +76,12 @@ public class configuration {
         }
         return instanceThreadId;
     }
+
+    public static String userName = ""; // 用户邮箱地址
+    public static String password = ""; // 密码或者授权码
+    public static String targetAddress = ""; // 接受者邮箱地址
+
+    public static boolean sendMail = false;
 
     public static boolean closeCheck = false;
 

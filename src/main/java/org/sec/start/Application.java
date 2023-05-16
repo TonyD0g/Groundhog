@@ -10,7 +10,6 @@ import org.sec.input.CommandChoice;
 import java.io.IOException;
 
 public class Application {
-    static boolean openFlag = false;
     private static final Logger logger = Logger.getLogger(Application.class);
 
     public static void start(String[] args) {
@@ -24,12 +23,11 @@ public class Application {
         }
         if (command.closeCheck) {
             configuration.closeCheck = true;
-            Application.openFlag = true;
-            Socket.connect(configuration.PORT);
         }
-        if (!openFlag) {
-            Socket.connect(configuration.PORT);
+        if(command.sendMail){
+            configuration.sendMail = true;
         }
+        Socket.connect(configuration.PORT);
     }
 
 }
