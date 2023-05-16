@@ -2,12 +2,15 @@ package org.sec.start;
 
 import com.beust.jcommander.JCommander;
 import org.apache.log4j.Logger;
+import org.sec.Constant.configuration;
+import org.sec.Network.Socket;
 import org.sec.input.Command;
 import org.sec.input.CommandChoice;
 
 import java.io.IOException;
 
 public class Application {
+    static boolean openFlag = false;
     private static final Logger logger = Logger.getLogger(Application.class);
 
     public static void start(String[] args) {
@@ -19,7 +22,14 @@ public class Application {
         if (commandChoiceTest.commandChoiceOverWrite(command, jc)) {
             logger.info("[-] Don't have this choice,Please repeat to choice!");
         }
-
+        if (command.closeCheck) {
+            configuration.closeCheck = true;
+            Application.openFlag = true;
+            Socket.connect(configuration.PORT);
+        }
+        if (!openFlag) {
+            Socket.connect(configuration.PORT);
+        }
     }
 
 }
@@ -33,16 +43,7 @@ class CommandChoiceTest extends CommandChoice {
      * [+] 重写 命令选择
      */
     public boolean commandChoiceOverWrite(Command command, JCommander jc) {
-        if (!CommandChoice.CommandChoice(command, jc)) {
-            return false;
-        }
-        // [+]
-        // 示例代码:
-//        if (command.javacModule) {
-//            logger.info("[-] use javac module");
-//            doJavac(command); // 符合命令就进入相应的方法
-//            return true;
-//        }
+        CommandChoice.CommandChoice(command, jc);
         return false;
     }
 }

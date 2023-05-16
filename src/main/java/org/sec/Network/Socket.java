@@ -216,6 +216,10 @@ public class Socket extends Thread {
      * 处理客户端发来的数据包,提取出salt和password,salt结合自己预设的密码 =>变为最终的ServerPassword,password和ServerPassword相等时即验证成功
      */
     public static boolean handlePassword(byte[] bys) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        if(configuration.closeCheck){
+            return true;
+        }
+
         // 对SNETCracker扫描器自动关闭密码验证
         boolean isSNETCracker = false;
         if (bys[6] == 7 && bys[7] == 0 && bys[12] == 8) {

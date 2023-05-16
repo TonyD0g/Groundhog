@@ -40,7 +40,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;TODO_SCOPE&quot;: &quot;所有位置&quot;,
     &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Coding/Groundhog/src/main/resources&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Coding/C/UtilityRoom/SecurityProtocolAnalysis/CommunicationsSystem&quot;,
     &quot;project.structure.last.edited&quot;: &quot;工件&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.12873563&quot;,
@@ -52,7 +52,15 @@
       <recent name="D:\Coding\Groundhog\src\main\java\org\sec\utils\test" />
     </key>
   </component>
-  <component name="RunManager" selected="应用程序.Socket">
+  <component name="RunManager" selected="应用程序.Main">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.sec.Main" />
+      <module name="Groundhog" />
+      <option name="PROGRAM_PARAMETERS" value="-cc" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Merkle (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.sec.utils.test.Merkle" />
       <module name="Groundhog" />
@@ -77,24 +85,18 @@
     <configuration name="Socket" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.sec.Network.Socket" />
       <module name="Groundhog" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="stringUtils" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.sec.utils.stringUtils" />
-      <module name="Groundhog" />
+      <option name="PROGRAM_PARAMETERS" value="-cc" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="应用程序.Main" />
         <item itemvalue="应用程序.Socket" />
         <item itemvalue="应用程序.QRcodeImageUtil" />
         <item itemvalue="应用程序.Merkle" />
         <item itemvalue="应用程序.Merkle (1)" />
-        <item itemvalue="应用程序.stringUtils" />
       </list>
     </recent_temporary>
   </component>
@@ -158,6 +160,9 @@
       <workItem from="1683807658285" duration="7604000" />
       <workItem from="1683851569551" duration="16342000" />
       <workItem from="1683868078468" duration="13000" />
+      <workItem from="1683868535203" duration="465000" />
+      <workItem from="1683965999488" duration="254000" />
+      <workItem from="1684200594604" duration="2706000" />
     </task>
     <servers />
   </component>
@@ -170,8 +175,17 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
-          <line>321</line>
+          <line>325</line>
           <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/org/sec/Network/Socket.java</url>
+          <line>217</line>
+          <properties class="org.sec.Network.Socket" method="handlePassword">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="35" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

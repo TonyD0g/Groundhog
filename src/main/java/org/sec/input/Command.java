@@ -6,6 +6,6 @@ public  class Command {
     @Parameter(names = {"-h", "--help"}, description = "Help Info", help = true)
     public boolean help;
 
-    @Parameter(names = {"-o", "--output"}, description = "Output File")
-    public String output;
+    @Parameter(names = {"-cc", "--CloseCheck"}, description = "is open password check?", help = true)
+    public boolean closeCheck;
 }

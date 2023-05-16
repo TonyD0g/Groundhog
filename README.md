@@ -40,7 +40,8 @@ Groundhog只是第二种类型,且由于mysql蜜罐使用的Load data local infi
 10.解析mysql通讯包	[1]
 11.处理[Malformed Packet: MySQL]:即00 00 00 02	[1]
 12.对SNETCracker扫描器自动关闭密码验证		[1]
-
+13.生成log文件夹,并将之后生成的log文件扔进log文件夹
+14.自定义是否开启密码验证
 ```
 
 
@@ -72,6 +73,9 @@ LFI文件下是常用的文件读取路径,自己发现具有实际价值的,可
 客户端:
 Navicat或cmd命令行输入:
 .\mysql -h 127.0.0.1 -u root -p --ssl-mode=DISABLED
+
+参数:
+-cc	关闭密码验证
 
 注意:
 1.读取到的文件使用二进制文本编辑器打开,如UE编辑器
@@ -123,11 +127,8 @@ Navicat或cmd命令行输入:
 # TODO
 
 - 支持大文件传输
-- 欺骗扫描器
-- 自定义是否开启密码验证
 - 设置connect_timeout
 - 修复mysql 2013错误
-- 生成log文件夹,并将之后生成的log文件扔进log文件夹
 
 
 

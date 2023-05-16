@@ -34,9 +34,14 @@ public class configuration {
         }
         FileUtils.flushFile("." + File.separator + "blockIpList.txt"); // 刷新blockIp.txt
 
+        File logFolder = new File("." + File.separator + "logFolder");
+        if (!logFolder.exists()) {
+            logFolder.mkdirs();
+        }
+
         // 操作日志.log
         currentTime = stringUtils.thisTime(timeFormat);
-        logFileName = "." + File.separator + currentTime + ".log";
+        logFileName = "." + File.separator + "logFolder" + File.separator + currentTime + ".log";
         File filename4 = new File(logFileName);
         if (!filename4.exists()) {
             filename4.createNewFile();
@@ -54,6 +59,8 @@ public class configuration {
         }
         return instanceThreadId;
     }
+
+    public static boolean closeCheck = false;
 
     public static String currentTime;
     public static String timeFormat = "yyyy-MM-dd";
@@ -100,8 +107,7 @@ public class configuration {
     // 可选版本集合,已有:8.0.12 ,5.0.97 , 5.5.29
     public static String[] versionList =
             {"352e372e323600", "382e302e313200", "352e302e393700", "352e352e323900"};
-//    public static String[] versionList =
-//            {"352e302e393700"};
+
     // 已选版本
     public static String choiceVersion;
 
